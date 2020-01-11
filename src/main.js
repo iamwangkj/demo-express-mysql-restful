@@ -5,7 +5,7 @@ var morgan = require('morgan')
 var createError = require('http-errors')
 
 const indexRouter = require('./routes/index')
-const loginRouter = require('./routes/login')
+const sessionRouter = require('./routes/session')
 const usersRouter = require('./routes/users')
 
 // 配置
@@ -19,7 +19,7 @@ app.use(morgan('dev'))
 
 // 路由
 app.use('/', indexRouter)
-app.use('/login', loginRouter)
+app.use('/session', sessionRouter)
 app.use('/users', usersRouter)
 
 // catch 404 and forward to error handler
