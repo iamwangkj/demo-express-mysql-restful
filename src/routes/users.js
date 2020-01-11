@@ -5,11 +5,11 @@ const mysqlConfig = require('../config/db.js')
 
 // 查询语句
 const sql = {
-  add: 'insert into user(id, name, age) value(0,?,?)',
-  get: 'select * from user where id=?',
-  getAll: 'select * from user',
+	insert: 'insert into user(id, username, password) value(0,?,?)',
+  query: 'select * from user where username=?',
+  queryAll: 'select * from user',
   update: 'update user set name=?, age=? where id=?',
-  del: 'delete from user where id=?'
+  delete: 'delete from user where id=?'
 }
 
 // 使用连接池，提升性能
@@ -30,19 +30,24 @@ const jsonWrite = function (res, ret) {
 
 router.post('/', (req, res, next) => {
 	// 获取前台页面传过来的参数
-	const param = req.body || req.query || req.params
-	console.log('param=', param)
+	const { username, password } = req.body
+	console.log('param=', username, password)
 	pool.getConnection((err, connection) => {
 		if (err) throw err; // not connected!
-		connection.query(sql.add, [param.name, param.age], (err, result) => {
-			if (result) {
-				console.log('result', result)
-				result = {
-					code: 200,
-					msg: '增加成功'
-				}
+		connection.query(sql.query, [username], (err, result) => {
+			console.log('result', result)
+			if (result.length > 0) {
+				res.status(200).json({
+					msg: 'username exist'
+				})
 			}
-			jsonWrite(res, result)
+			else {
+				connection.query(sql.insert, [username, password], (err, result) => {
+					res.status(200).json({
+						msg: 'create'
+					})
+				})
+			}
 			// 释放连接 
 			connection.release()
 			// Handle error after the release.
@@ -53,30 +58,15 @@ router.post('/', (req, res, next) => {
 })
 
 router.get('/:userId', (req, res, next) => {
-  const param = req.body || req.query || req.params
-	console.log('param=', req.params[0])
-	pool.getConnection((err, connection) => {
-		if (err) throw err; // not connected!
-		connection.query(sql.get, ['1'], (err, result) => {
-			if (result) {
-				console.log('result', result, typeof result)
-			}
-			jsonWrite(res, result)
-			// 释放连接 
-			connection.release()
-			// Handle error after the release.
-			if (err) throw err
-			// Don't use the connection here, it has been returned to the pool.
-		})
-	})
+	res.status(200).end()
 })
 
 router.put('/', function(req, res, next) {
-  res.send('respond with a resource2')
+  res.status(403).end()
 })
 
 router.delete('/', function(req, res, next) {
-  res.send('respond with a resource2')
+  res.status(403).end()
 })
 
 module.exports = router
